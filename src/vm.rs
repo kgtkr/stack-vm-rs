@@ -15,8 +15,8 @@ impl VM {
         VM {
             fp: 0,
             stack: {
-                let mut v = Vec::with_capacity(10);
-                v.resize(10, 0);
+                let mut v = Vec::with_capacity(1000);
+                v.resize(1000, 0);
                 v
             },
             sp: 0,
@@ -127,6 +127,31 @@ impl VM {
 
                 self.pc += 1;
             }
+            Cmd::Mod => {
+                let x = self.pop();
+                let y = self.pop();
+                self.push(x % y);
+
+                self.pc += 1;
+            }
+            Cmd::Eq => {
+                let x = self.pop();
+                let y = self.pop();
+                self.push(if x == y { 1 } else { 0 });
+
+                self.pc += 1;
+            }
+            Cmd::JumpIf(i) => {
+                let x = self.pop();
+                if x != 0 {
+                    self.pc = i;
+                } else {
+                    self.pc += 1;
+                }
+            }
+            Cmd::Jump(i) => {
+                self.pc = i;
+            }
         }
         println!("[result]{}", self.debug_state());
     }
@@ -143,7 +168,11 @@ pub enum Cmd {
     PopR(usize),
     Const(usize),
     Add,
+    Mod,
     Entry(usize),
+    Eq,
+    JumpIf(usize),
+    Jump(usize),
 }
 
 #[test]
@@ -165,5 +194,34 @@ fn test() {
         ])
         .run(),
         3
+    );
+
+    assert_eq!(
+        VM::new(vec![
+            Cmd::Entry(1),    // 0
+            Cmd::Frame(0),    // 1
+            Cmd::Const(182),  // 2
+            Cmd::Const(1029), // 3
+            Cmd::Call(7),     // 4
+            Cmd::PopR(2),     // 5
+            Cmd::Ret,         // 6
+            Cmd::Frame(0),    // 7 gcd(a:1, b:0)
+            Cmd::ArgLoad(0),  // 8
+            Cmd::Const(0),    // 9
+            Cmd::Eq,          // 10
+            Cmd::JumpIf(13),  // 11
+            Cmd::Jump(15),    //12
+            Cmd::ArgLoad(1),  //13
+            Cmd::Jump(21),    // 14
+            Cmd::ArgLoad(0),  //15
+            Cmd::ArgLoad(0),  //16
+            Cmd::ArgLoad(1),  //17
+            Cmd::Mod,         //18
+            Cmd::Call(7),     //19
+            Cmd::PopR(2),     //20
+            Cmd::Ret          //21
+        ])
+        .run(),
+        7
     );
 }
