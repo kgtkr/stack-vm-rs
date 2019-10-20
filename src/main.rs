@@ -1,3 +1,4 @@
+mod llang;
 mod vm;
 
 fn main() {

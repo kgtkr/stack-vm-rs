@@ -11,7 +11,7 @@ pub struct VM {
 }
 
 impl VM {
-    fn new(program: Vec<Cmd>) -> VM {
+    pub fn new(program: Vec<Cmd>) -> VM {
         VM {
             fp: 0,
             stack: {
@@ -25,7 +25,7 @@ impl VM {
         }
     }
 
-    fn run(&mut self) -> usize {
+    pub fn run(&mut self) -> usize {
         self.run_cmd();
         while self.pc != 0 {
             self.run_cmd();
